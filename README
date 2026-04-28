@@ -1,22 +1,26 @@
-🛡️ Renovación Automática de Certificados SSL (Docker-to-Docker)
+Para que los comandos y configuraciones se vean como una "consola" o bloque de código en GitHub, debes envolver ese texto usando tres acentos graves (```). Además, puedes especificar el lenguaje (como `bash`, `nginx` o `cron`) justo después de los primeros tres acentos para que GitHub le ponga colores al código.
+
+Aquí tienes el texto ya formateado en Markdown. Solo **cópialo y pégalo** tal cual en tu archivo `README.md` de GitHub:
+
+```markdown
+# 🛡️ Renovación Automática de Certificados SSL (Docker-to-Docker)
+
 Este repositorio contiene un script en Bash diseñado para automatizar la renovación de certificados SSL de Let's Encrypt utilizando contenedores Docker. El script utiliza la imagen oficial de Certbot para renovar los certificados y luego recarga el contenedor de Nginx sin caídas de servicio.
 
-📋 Requisitos Previos
+## 📋 Requisitos Previos
+
 Para que este script funcione, debes tener:
+* Docker instalado y en ejecución.
+* Un contenedor de Nginx corriendo.
+* Los volúmenes correctamente mapeados entre el host y los contenedores.
 
-Docker instalado y en ejecución.
+## ⚙️ Configuración Adicional de Nginx
 
-Un contenedor de Nginx corriendo.
+Para que Let's Encrypt pueda validar que eres el dueño del dominio, tu configuración de Nginx (`nginx.conf` o el archivo de tu sitio) debe incluir la ruta para el desafío ACME.
 
-Los volúmenes correctamente mapeados entre el host y los contenedores.
+Añade esto dentro del bloque `server { ... }` de tu puerto 80:
 
-⚙️ Configuración Adicional de Nginx
-Para que Let's Encrypt pueda validar que eres el dueño del dominio, tu configuración de Nginx (nginx.conf o el archivo de tu sitio) debe incluir la ruta para el desafío ACME.
-
-Añade esto dentro del bloque server { ... } de tu puerto 80:
-
-Nginx
-
+```nginx
 server {
     listen 80;
     server_name tu-dominio.com;
@@ -31,11 +35,13 @@ server {
         return 301 https://$host$request_uri;
     }
 }
+```
 
+## 🚀 Cómo obtener los certificados por primera vez
 
-🚀 Cómo obtener los certificados por primera vez
-El script de renovación solo funciona si ya existen certificados previos. Si es la primera vez, debes generarlos manualmente con el siguiente comando (sustituye tu-dominio.com y tu-email@gmail.com):
+El script de renovación solo funciona si ya existen certificados previos. Si es la primera vez, debes generarlos manualmente con el siguiente comando (sustituye `tu-dominio.com` y `tu-email@gmail.com`):
 
+```bash
 docker run --rm \
   -v "/etc/letsencrypt:/etc/letsencrypt" \
   -v "/var/lib/letsencrypt:/var/lib/letsencrypt" \
@@ -46,33 +52,36 @@ docker run --rm \
   --agree-tos \
   --no-eff-email \
   -d tu-dominio.com -d www.tu-dominio.com
+```
 
-Pasos para activar el script:
-Dar permisos de ejecución:
+### Pasos para activar el script:
 
+1. **Dar permisos de ejecución:**
+```bash
 chmod +x renew_certs.sh
+```
 
-Crear el archivo de log (opcional pero recomendado):
-
+2. **Crear el archivo de log (opcional pero recomendado):**
+```bash
 sudo touch /var/log/certbot_renewal.log
 sudo chmod 666 /var/log/certbot_renewal.log
+```
 
-Programar en Cron (Automatización):
+3. **Programar en Cron (Automatización):**
 Para que se ejecute automáticamente todos los meses, abre el editor de cron:
-
+```bash
 crontab -e
+```
+
 Y añade esta línea al final para que corra el día 1 de cada mes a las 03:00 AM:
-
-Fragmento de código
-
+```cron
 0 3 1 * * /ruta/a/tu/script/renew_certs.sh
+```
 
+## 🛠️ ¿Qué hace exactamente este script?
 
-🛠️ ¿Qué hace exactamente este script?
-Crea un contenedor temporal de Certbot: Utiliza los volúmenes compartidos para leer los certificados actuales y escribir los nuevos.
-
-Validación vía Webroot: Certbot coloca un archivo temporal en /var/www/certbot, Nginx lo sirve, y Let's Encrypt lo verifica para validar el dominio.
-
-Recarga de Nginx: En lugar de detener el contenedor, ejecuta nginx -s reload dentro de tu contenedor de Nginx activo para que tome los nuevos certificados sin desconectar a los usuarios.
-
-Logging: Todo el proceso queda registrado en /var/log/certbot_renewal.log para auditoría.
+* **Crea un contenedor temporal de Certbot:** Utiliza los volúmenes compartidos para leer los certificados actuales y escribir los nuevos.
+* **Validación vía Webroot:** Certbot coloca un archivo temporal en `/var/www/certbot`, Nginx lo sirve, y Let's Encrypt lo verifica para validar el dominio.
+* **Recarga de Nginx:** En lugar de detener el contenedor, ejecuta `nginx -s reload` dentro de tu contenedor de Nginx activo para que tome los nuevos certificados sin desconectar a los usuarios.
+* **Logging:** Todo el proceso queda registrado en `/var/log/certbot_renewal.log` para auditoría.
+```

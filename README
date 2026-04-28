@@ -1,7 +1,3 @@
-Para que los comandos y configuraciones se vean como una "consola" o bloque de código en GitHub, debes envolver ese texto usando tres acentos graves (```). Además, puedes especificar el lenguaje (como `bash`, `nginx` o `cron`) justo después de los primeros tres acentos para que GitHub le ponga colores al código.
-
-Aquí tienes el texto ya formateado en Markdown. Solo **cópialo y pégalo** tal cual en tu archivo `README.md` de GitHub:
-
 ```markdown
 # 🛡️ Renovación Automática de Certificados SSL (Docker-to-Docker)
 
